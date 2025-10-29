@@ -40,10 +40,10 @@
       let gameSettings = null; // { type: 'tonpuu' | 'hanchan' | 'yonchan', tobu: boolean }
       let isGameOver = false;
       let players = [
-        { id: 1, name: '东家', score: 25000, wind: '東', isRiichi: false },
-        { id: 2, name: '南家', score: 25000, wind: '南', isRiichi: false },
-        { id: 3, name: '西家', score: 25000, wind: '西', isRiichi: false },
-        { id: 4, name: '北家', score: 25000, wind: '北', isRiichi: false }
+        { id: 1, name: '甲', score: 25000, wind: '東', isRiichi: false },
+        { id: 2, name: '乙', score: 25000, wind: '南', isRiichi: false },
+        { id: 3, name: '丙', score: 25000, wind: '西', isRiichi: false },
+        { id: 4, name: '丁', score: 25000, wind: '北', isRiichi: false }
       ];
       
       let gameState = {
@@ -1820,10 +1820,10 @@
         gameSettings = null;
         isGameOver = false;
         players = [
-          { id: 1, name: '东家', score: 25000, wind: '東', isRiichi: false },
-          { id: 2, name: '南家', score: 25000, wind: '南', isRiichi: false },
-          { id: 3, name: '西家', score: 25000, wind: '西', isRiichi: false },
-          { id: 4, name: '北家', score: 25000, wind: '北', isRiichi: false }
+          { id: 1, name: '甲', score: 25000, wind: '東', isRiichi: false },
+          { id: 2, name: '乙', score: 25000, wind: '南', isRiichi: false },
+          { id: 3, name: '丙', score: 25000, wind: '西', isRiichi: false },
+          { id: 4, name: '丁', score: 25000, wind: '北', isRiichi: false }
         ];
         gameState = { wind: 'east', round: 1, honba: 0, riichiSticks: 0 };
         currentDealerIndex = 0;
@@ -2906,7 +2906,7 @@
                                     : 'bg-white text-yellow-700 border-2 border-yellow-300 hover:bg-yellow-50'
                                 }"
                               >
-                                ${player.wind}<br/>
+                                ${player.name}（${player.wind}）<br/>
                                 <span class="text-xs">${nagashiManganPlayers.includes(idx) ? '✓ 满贯' : '未达成'}</span>
                               </button>
                             `).join('')}
@@ -2956,7 +2956,7 @@
                                 : 'bg-gray-200 text-gray-700'
                             }"
                           >
-                            ${player.wind}<br/>
+                            ${player.name}（${player.wind}）<br/>
                             <span class="text-xs">${tenpaiedPlayers.includes(idx) ? '听牌' : '未听'}</span>
                           </button>
                         `).join('')}
@@ -2992,7 +2992,7 @@
                                 }"
                                 ${!canSelect ? 'disabled' : ''}
                               >
-                                ${player.wind}<br/>
+                                ${player.name}（${player.wind}）<br/>
                                 <span class="text-xs">
                                   ${isAlreadyRiichi ? '已立直' : isDrawRiichi ? '立直' : isTenpai ? '可立直' : '-'}
                                 </span>
@@ -3040,7 +3040,7 @@
                                     : 'bg-gray-100 hover:bg-gray-200'
                                 }"
                               >
-                                ${player.wind} ${player.name}
+                                ${player.name}（${player.wind}）
                               </button>
                             `).join('')}
                           </div>
@@ -3063,7 +3063,7 @@
                                         : 'bg-gray-100 hover:bg-gray-200'
                                     }"
                                   >
-                                    ${player.wind} ${player.name}
+                                    ${player.name}（${player.wind}）
                                   </button>
                                 `;
                               }).join('')}
@@ -3079,7 +3079,7 @@
                               const data = multiWinHanFu[winnerIdx] || { han: 1, fu: 30 };
                               return `
                                 <div class="bg-white p-3 rounded-lg border-2 border-blue-300">
-                                  <p class="text-xs font-bold text-blue-800 mb-2">${player.wind} ${player.name} 的番数符数</p>
+                                  <p class="text-xs font-bold text-blue-800 mb-2">${player.name}（${player.wind}）的番数符数</p>
                                   
                                   <div class="grid grid-cols-2 gap-2">
                                     <div>
@@ -3176,7 +3176,7 @@
                                 <div class="grid grid-cols-4 gap-2 mb-2">
                                   ${players.map((player, idx) => `
                                     <div class="text-center">
-                                      <div class="text-xs text-gray-600">${player.wind}</div>
+                                      <div class="text-xs text-gray-600">${player.name}（${player.wind}）</div>
                                       <div class="font-bold text-sm ${previewScores[idx] > 0 ? 'text-green-600' : previewScores[idx] < 0 ? 'text-red-600' : 'text-gray-400'}">
                                         ${previewScores[idx] > 0 ? '+' : ''}${previewScores[idx]}
                                       </div>
@@ -3240,7 +3240,7 @@
                             data-index="${idx}"
                             class="py-2 rounded-lg font-bold ${winnerIndex === idx ? 'bg-blue-500 text-white' : 'bg-gray-200'}"
                           >
-                            ${player.wind}
+                            ${player.name}（${player.wind}）
                           </button>
                         `).join('')}
                       </div>
@@ -3262,7 +3262,7 @@
                                 'bg-gray-200'
                               }"
                             >
-                              ${player.wind}
+                              ${player.name}（${player.wind}）
                             </button>
                           `).join('')}
                         </div>
@@ -3288,7 +3288,7 @@
                             ${isDisabled ? 'disabled' : ''}
                             class="py-2 rounded-lg font-bold ${player.isRiichi ? 'bg-yellow-500 text-white' : 'bg-gray-200'} ${isDisabled ? 'opacity-50 cursor-not-allowed' : ''}"
                           >
-                            ${player.wind}${player.isRiichi ? ' 立' : ''}${isDisabled ? ' (副露)' : ''}
+                            ${player.name}（${player.wind}）${player.isRiichi ? ' 立' : ''}${isDisabled ? ' (副露)' : ''}
                           </button>
                         `}).join('')}
                       </div>
@@ -3999,8 +3999,7 @@
                           <span class="text-2xl font-bold text-gray-400 w-8">
                             ${idx + 1}
                           </span>
-                          <span class="font-bold">${player.wind}</span>
-                          <span>${player.name}</span>
+                          <span class="font-bold">${player.name}（${player.wind}）</span>
                         </div>
                         <span class="text-xl font-bold text-emerald-700">
                           ${player.score.toLocaleString()}
@@ -4232,6 +4231,22 @@
           }
         };
         
+        // 处理 blur 事件（失去焦点）
+        const blurHandler = (e) => {
+          const target = e.target;
+          
+          // 玩家名称输入框失去焦点时重新渲染
+          if (target.id && target.id.startsWith('player-name-')) {
+            const idx = parseInt(target.id.split('-')[2], 10);
+            if (!isNaN(idx) && players[idx]) {
+              players[idx].name = target.value;
+              saveGameState(); // 保存状态
+              render(); // 立即重新渲染所有显示
+            }
+            return;
+          }
+        };
+        
         if (root._inputHandler) {
           root.removeEventListener('input', root._inputHandler);
         }
@@ -4243,6 +4258,12 @@
         }
         root._changeHandler = changeHandler;
         root.addEventListener('change', changeHandler);
+        
+        if (root._blurHandler) {
+          root.removeEventListener('blur', root._blurHandler, true);
+        }
+        root._blurHandler = blurHandler;
+        root.addEventListener('blur', blurHandler, true); // 使用捕获阶段确保能捕获所有blur事件
       };
       
       // 辅助函数：处理各种操作
