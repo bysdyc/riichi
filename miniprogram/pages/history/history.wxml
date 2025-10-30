@@ -1,0 +1,42 @@
+<!-- pages/history/history.wxml -->
+<view class="container">
+  <view class="header">
+    <text class="title">历史记录</text>
+  </view>
+
+  <view wx:if="{{roundHistory.length === 0}}" class="empty-state">
+    <text class="empty-icon">📝</text>
+    <text class="empty-text">暂无历史记录</text>
+  </view>
+
+  <view wx:else class="history-list">
+    <view wx:for="{{roundHistory}}" wx:key="index" class="history-item">
+      <view class="item-header">
+        <text class="round-info">{{item.windText}}{{item.round}}局 {{item.honba}}本场</text>
+        <text class="item-type {{item.type}}">{{item.typeText}}</text>
+      </view>
+      
+      <view wx:if="{{item.type === 'win'}}" class="item-content">
+        <view class="info-row">
+          <text class="label">和牌者：</text>
+          <text class="value">{{item.winner}}</text>
+        </view>
+        <view class="info-row">
+          <text class="label">{{item.loser === '自摸' ? '方式：' : '放铳者：'}}</text>
+          <text class="value">{{item.loser}}</text>
+        </view>
+        <view class="info-row">
+          <text class="label">点数：</text>
+          <text class="value highlight">{{item.han}}番{{item.fu}}符（{{item.payment}}点）</text>
+        </view>
+      </view>
+
+      <view wx:if="{{item.type === 'draw'}}" class="item-content">
+        <view class="info-row">
+          <text class="label">听牌：</text>
+          <text class="value">{{item.tenpai}}</text>
+        </view>
+      </view>
+    </view>
+  </view>
+</view>

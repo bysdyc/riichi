@@ -1,0 +1,468 @@
+<!-- pages/game/game.wxml -->
+<view class="game-container">
+  <!-- 游戏状态栏 -->
+  <view class="game-status">
+    <view class="status-item">
+      <text class="status-label">场况：</text>
+      <text class="status-value">{{windText}}{{gameState.round}}局</text>
+    </view>
+    <view class="status-item">
+      <text class="status-label">本场：</text>
+      <text class="status-value">{{gameState.honba}}</text>
+    </view>
+    <view class="status-item">
+      <text class="status-label">立直棒：</text>
+      <text class="status-value">{{gameState.riichiSticks}}</text>
+    </view>
+  </view>
+
+  <!-- 玩家信息卡片 -->
+  <view class="players-section">
+    <view 
+      wx:for="{{players}}" 
+      wx:key="id" 
+      class="player-card {{item.isDealer ? 'dealer' : ''}} {{item.isRiichi ? 'riichi' : ''}}"
+    >
+      <view class="player-header">
+        <view class="player-wind">{{item.wind}}</view>
+        <view class="player-name">{{item.name}}</view>
+        <view wx:if="{{item.isDealer}}" class="dealer-badge">庄</view>
+        <view wx:if="{{item.isRiichi}}" class="riichi-badge">立</view>
+      </view>
+      <view class="player-score">{{item.score}}</view>
+      <button 
+        class="btn-riichi-toggle" 
+        size="mini"
+        bindtap="toggleRiichi" 
+        data-index="{{index}}"
+      >
+        {{item.isRiichi ? '取消立直' : '立直'}}
+      </button>
+    </view>
+  </view>
+
+  <!-- 操作按钮区 -->
+  <view class="actions-section">
+    <button class="btn-action btn-win" bindtap="showWinDialog">和牌</button>
+    <button class="btn-action btn-draw" bindtap="showDrawDialog">流局</button>
+    <button class="btn-action btn-history" bindtap="showHistory">历史</button>
+    <button class="btn-action btn-settings" bindtap="showSettings">设置</button>
+  </view>
+
+  <!-- 和牌对话框 -->
+  <view wx:if="{{showWinDialog}}" class="dialog-mask" bindtap="closeWinDialog">
+    <view class="dialog-content large" catchtap="stopPropagation">
+      <view class="dialog-title">记录和牌</view>
+      
+      <!-- 输入模式切换 -->
+      <view class="mode-switch">
+        <button 
+          class="btn-mode {{inputMode === 'hand' ? 'active' : ''}}" 
+          size="mini"
+          bindtap="switchInputMode" 
+          data-mode="hand"
+        >
+          手牌输入
+        </button>
+        <button 
+          class="btn-mode {{inputMode === 'manual' ? 'active' : ''}}" 
+          size="mini"
+          bindtap="switchInputMode" 
+          data-mode="manual"
+        >
+          手动输入
+        </button>
+        <button 
+          class="btn-mode {{inputMode === 'multi' ? 'active' : ''}}" 
+          size="mini"
+          bindtap="switchInputMode" 
+          data-mode="multi"
+        >
+          多人和牌
+        </button>
+      </view>
+      
+      <!-- 选择和牌方式 -->
+      <view wx:if="{{inputMode !== 'multi'}}" class="win-type-section">
+        <button 
+          class="btn-win-type {{isTsumo ? 'active' : ''}}" 
+          bindtap="setWinType" 
+          data-type="tsumo"
+        >
+          自摸
+        </button>
+        <button 
+          class="btn-win-type {{!isTsumo ? 'active' : ''}}" 
+          bindtap="setWinType" 
+          data-type="ron"
+        >
+          荣和
+        </button>
+      </view>
+
+      <!-- 选择和牌者 -->
+      <view class="player-selection">
+        <text class="selection-label">和牌者：</text>
+        <view class="player-buttons">
+          <button 
+            wx:for="{{players}}" 
+            wx:key="id"
+            class="btn-player {{winnerIndex === index ? 'active' : ''}}"
+            bindtap="selectWinner"
+            data-index="{{index}}"
+          >
+            {{item.name}}
+          </button>
+        </view>
+      </view>
+
+      <!-- 选择放铳者（荣和时） -->
+      <view wx:if="{{!isTsumo}}" class="player-selection">
+        <text class="selection-label">放铳者：</text>
+        <view class="player-buttons">
+          <button 
+            wx:for="{{players}}" 
+            wx:key="id"
+            wx:if="{{index !== winnerIndex}}"
+            class="btn-player {{loserIndex === index ? 'active' : ''}}"
+            bindtap="selectLoser"
+            data-index="{{index}}"
+          >
+            {{item.name}}
+          </button>
+        </view>
+      </view>
+
+      <!-- 手牌输入模式 -->
+      <view wx:if="{{inputMode === 'hand'}}" class="hand-input-section">
+        <!-- 手牌显示区 -->
+        <view class="current-hand">
+          <text class="hand-label">当前手牌（{{handTiles.length}}张）：</text>
+          <view class="hand-display">
+            <view wx:for="{{handTiles}}" wx:key="index" class="hand-tile">
+              {{getTileDisplay(item)}}
+            </view>
+            <button 
+              wx:if="{{handTiles.length < 13}}" 
+              class="btn-add-tile" 
+              size="mini"
+              bindtap="showTileSelector"
+              data-type="hand"
+            >
+              +选择手牌
+            </button>
+          </view>
+        </view>
+
+        <!-- 副露区 -->
+        <view class="meld-section">
+          <text class="hand-label">副露（{{melds.length}}组）：</text>
+          <view class="meld-display">
+            <view wx:for="{{melds}}" wx:key="index" class="meld-group">
+              <text class="meld-type">{{item.typeName}}</text>
+              <view class="meld-tiles">
+                <text wx:for="{{item.tiles}}" wx:for-item="tile" wx:key="tile" class="meld-tile">
+                  {{getTileDisplay(tile)}}
+                </text>
+              </view>
+              <text class="btn-remove-meld" bindtap="removeMeld" data-index="{{index}}">×</text>
+            </view>
+            <button 
+              wx:if="{{melds.length < 4}}" 
+              class="btn-add-meld" 
+              size="mini"
+              bindtap="showMeldDialog"
+            >
+              +添加副露
+            </button>
+          </view>
+        </view>
+
+        <!-- 和牌 -->
+        <view class="win-tile-section">
+          <text class="hand-label">和牌：</text>
+          <view class="win-tile-display">
+            <view wx:if="{{winTile}}" class="win-tile-item">
+              {{getTileDisplay(winTile)}}
+              <text class="btn-remove-win" bindtap="clearWinTile">×</text>
+            </view>
+            <button 
+              wx:else
+              class="btn-select-win" 
+              size="mini"
+              bindtap="showTileSelector"
+              data-type="win"
+            >
+              选择和牌
+            </button>
+          </view>
+        </view>
+
+        <!-- 状况役 -->
+        <view class="yaku-conditions">
+          <text class="hand-label">状况役：</text>
+          <view class="condition-checks">
+            <checkbox-group bindchange="conditionChange">
+              <label><checkbox value="riichi" checked="{{isRiichi}}"/>立直</label>
+              <label><checkbox value="ippatsu" checked="{{isIppatsu}}"/>一发</label>
+              <label><checkbox value="doubleRiichi" checked="{{isDoubleRiichi}}"/>双立直</label>
+              <label><checkbox value="haitei" checked="{{isHaitei}}"/>海底</label>
+              <label><checkbox value="houtei" checked="{{isHoutei}}"/>河底</label>
+              <label><checkbox value="rinshan" checked="{{isRinshan}}"/>岭上</label>
+              <label><checkbox value="chankan" checked="{{isChankan}}"/>抢杠</label>
+            </checkbox-group>
+          </view>
+        </view>
+
+        <!-- 分析结果 -->
+        <view wx:if="{{analysisResult}}" class="analysis-result">
+          <view class="result-header">
+            <text class="result-title">分析结果</text>
+            <button class="btn-reanalyze" size="mini" bindtap="analyzeHand">重新分析</button>
+          </view>
+          <view class="result-yaku">
+            <text class="yaku-label">役种：</text>
+            <text class="yaku-list">{{analysisResult.yaku}}</text>
+          </view>
+          <view class="result-han-fu">
+            <text>{{analysisResult.han}}番{{analysisResult.fu}}符</text>
+          </view>
+        </view>
+
+        <view wx:if="{{analysisError}}" class="analysis-error">
+          <text>{{analysisError}}</text>
+        </view>
+
+        <!-- 分析按钮 -->
+        <button 
+          wx:if="{{handTiles.length + melds.length * 3 === 13 && winTile}}"
+          class="btn-analyze" 
+          bindtap="analyzeHand"
+        >
+          分析牌型
+        </button>
+      </view>
+
+      <!-- 手动输入模式（原有的番符输入） -->
+      <view wx:if="{{inputMode === 'manual'}}" class="manual-input-section">
+        <view class="han-fu-input">
+          <view class="input-group">
+            <text class="input-label">番数：</text>
+            <input 
+              class="input-field" 
+              type="number" 
+              value="{{han}}" 
+              bindinput="inputHan"
+              placeholder="1"
+            />
+          </view>
+          <view class="input-group">
+            <text class="input-label">符数：</text>
+            <input 
+              class="input-field" 
+              type="number" 
+              value="{{fu}}" 
+              bindinput="inputFu"
+              placeholder="30"
+            />
+          </view>
+        </view>
+      </view>
+
+      <!-- 多人和牌模式 -->
+      <view wx:if="{{inputMode === 'multi'}}" class="multi-win-section">
+        <view class="multi-win-notice">
+          <text>⚠️ 三家和（三麻）：同时多人荣和</text>
+        </view>
+
+        <!-- 选择放铳者 -->
+        <view class="player-selection">
+          <text class="selection-label">放铳者：</text>
+          <view class="player-buttons">
+            <button 
+              wx:for="{{players}}" 
+              wx:key="id"
+              class="btn-player {{multiLoserIndex === index ? 'active' : ''}}"
+              bindtap="selectMultiLoser"
+              data-index="{{index}}"
+            >
+              {{item.name}}
+            </button>
+          </view>
+        </view>
+
+        <!-- 和牌者列表 -->
+        <view class="multi-winners">
+          <text class="selection-label">和牌者（可多选）：</text>
+          <view wx:for="{{players}}" wx:key="id" class="multi-winner-item">
+            <checkbox-group bindchange="toggleMultiWinner" data-index="{{index}}">
+              <label class="multi-winner-label">
+                <checkbox 
+                  value="{{index}}" 
+                  checked="{{multiWinners[index]}}"
+                  disabled="{{multiLoserIndex === index}}"
+                />
+                <text>{{item.name}}</text>
+              </label>
+            </checkbox-group>
+            
+            <!-- 如果选中，显示番符输入 -->
+            <view wx:if="{{multiWinners[index]}}" class="winner-han-fu">
+              <input 
+                class="mini-input" 
+                type="number" 
+                placeholder="番"
+                value="{{multiHanFu[index].han}}"
+                bindinput="inputMultiHan"
+                data-index="{{index}}"
+              />
+              <text>番</text>
+              <input 
+                class="mini-input" 
+                type="number" 
+                placeholder="符"
+                value="{{multiHanFu[index].fu}}"
+                bindinput="inputMultiFu"
+                data-index="{{index}}"
+              />
+              <text>符</text>
+            </view>
+          </view>
+        </view>
+      </view>
+
+      <!-- 宝牌输入（非多人和牌模式） -->
+      <view wx:if="{{inputMode !== 'multi'}}" class="dora-input">
+        <view class="input-group">
+          <text class="input-label">宝牌：</text>
+          <input 
+            class="input-field" 
+            type="number" 
+            value="{{dora}}" 
+            bindinput="inputDora"
+            placeholder="0"
+          />
+        </view>
+        <view class="input-group">
+          <text class="input-label">里宝：</text>
+          <input 
+            class="input-field" 
+            type="number" 
+            value="{{uraDora}}" 
+            bindinput="inputUraDora"
+            placeholder="0"
+          />
+        </view>
+        <view class="input-group">
+          <text class="input-label">红宝：</text>
+          <input 
+            class="input-field" 
+            type="number" 
+            value="{{redDora}}" 
+            bindinput="inputRedDora"
+            placeholder="0"
+          />
+        </view>
+      </view>
+
+      <!-- 显示计算结果 -->
+      <view wx:if="{{pointsPreview}}" class="points-preview">
+        <text class="preview-label">点数预览：</text>
+        <text class="preview-value">{{pointsPreview}}</text>
+      </view>
+
+      <!-- 对话框按钮 -->
+      <view class="dialog-actions">
+        <button class="btn-dialog-cancel" bindtap="closeWinDialog">取消</button>
+        <button class="btn-dialog-confirm" bindtap="confirmWin">确认</button>
+      </view>
+    </view>
+  </view>
+
+  <!-- 流局对话框 -->
+  <view wx:if="{{showDrawDialog}}" class="dialog-mask" bindtap="closeDrawDialog">
+    <view class="dialog-content" catchtap="stopPropagation">
+      <view class="dialog-title">记录流局</view>
+      
+      <view class="tenpai-selection">
+        <text class="selection-label">听牌玩家（点击选择）：</text>
+        <view class="player-buttons">
+          <button 
+            wx:for="{{players}}" 
+            wx:key="id"
+            class="btn-player {{tenpaiedPlayers[index] ? 'active' : ''}}"
+            bindtap="toggleTenpai"
+            data-index="{{index}}"
+          >
+            {{item.name}}
+          </button>
+        </view>
+      </view>
+
+      <view class="dialog-actions">
+        <button class="btn-dialog-cancel" bindtap="closeDrawDialog">取消</button>
+        <button class="btn-dialog-confirm" bindtap="confirmDraw">确认流局</button>
+      </view>
+    </view>
+  </view>
+
+  <!-- 牌选择器对话框 -->
+  <view wx:if="{{showTileSelectorDialog}}" class="dialog-mask" bindtap="closeTileSelector">
+    <view class="dialog-content large" catchtap="stopPropagation">
+      <tile-selector 
+        title="{{tileSelectorTitle}}"
+        maxTiles="{{tileSelectorMax}}"
+        initialTiles="{{tileSelectorInitial}}"
+        bind:confirm="onTileSelected"
+        bind:change="onTileChange"
+      ></tile-selector>
+    </view>
+  </view>
+
+  <!-- 副露对话框 -->
+  <view wx:if="{{showMeldDialog}}" class="dialog-mask" bindtap="closeMeldDialog">
+    <view class="dialog-content" catchtap="stopPropagation">
+      <view class="dialog-title">添加副露</view>
+      
+      <view class="meld-type-selection">
+        <button 
+          wx:for="{{meldTypes}}" 
+          wx:key="id"
+          class="btn-meld-type {{selectedMeldType === item.id ? 'active' : ''}}"
+          bindtap="selectMeldType"
+          data-type="{{item.id}}"
+        >
+          {{item.name}}
+        </button>
+      </view>
+
+      <view class="meld-tiles-selection">
+        <text class="selection-label">选择牌（{{meldTileCount[selectedMeldType]}}张）：</text>
+        <tile-selector 
+          title=""
+          maxTiles="{{meldTileCount[selectedMeldType]}}"
+          bind:confirm="confirmMeld"
+        ></tile-selector>
+      </view>
+    </view>
+  </view>
+
+  <!-- 游戏结束对话框 -->
+  <view wx:if="{{isGameOver}}" class="dialog-mask">
+    <view class="dialog-content game-over">
+      <view class="dialog-title">🎉 游戏结束</view>
+      
+      <view class="final-ranking">
+        <view wx:for="{{finalRanking}}" wx:key="id" class="ranking-item">
+          <text class="rank">{{index + 1}}位</text>
+          <text class="player-name">{{item.name}}</text>
+          <text class="score">{{item.score}}</text>
+        </view>
+      </view>
+
+      <view class="dialog-actions">
+        <button class="btn-dialog-confirm" bindtap="backToHome">返回首页</button>
+      </view>
+    </view>
+  </view>
+</view>

@@ -1,0 +1,43 @@
+<!-- pages/index/index.wxml -->
+<view class="container">
+  <view class="header">
+    <text class="title">日本麻将记录器</text>
+    <text class="subtitle">选择游戏类型开始记录</text>
+  </view>
+
+  <view class="game-types">
+    <view class="game-type-card" bindtap="selectGameType" data-type="tonpuu">
+      <view class="card-icon">🎴</view>
+      <view class="card-title">东风战</view>
+      <view class="card-desc">东场4局</view>
+    </view>
+
+    <view class="game-type-card" bindtap="selectGameType" data-type="hanchan">
+      <view class="card-icon">🀄</view>
+      <view class="card-title">半庄战</view>
+      <view class="card-desc">东场+南场 8局</view>
+    </view>
+
+    <view class="game-type-card" bindtap="selectGameType" data-type="yonchan">
+      <view class="card-icon">🎯</view>
+      <view class="card-title">一庄战</view>
+      <view class="card-desc">东南西北 16局</view>
+    </view>
+  </view>
+
+  <view class="tobu-option">
+    <checkbox-group bindchange="tobuChange">
+      <label class="tobu-label">
+        <checkbox value="tobu" checked="{{tobu}}" color="#10b981"/>
+        <text>东场飞び（破产终止）</text>
+      </label>
+    </checkbox-group>
+  </view>
+
+  <view wx:if="{{hasSavedGame}}" class="saved-game-notice">
+    <view class="notice-icon">💾</view>
+    <text>检测到未完成的游戏</text>
+    <button class="btn-continue" bindtap="continueGame">继续游戏</button>
+    <button class="btn-clear" bindtap="clearSavedGame">清除存档</button>
+  </view>
+</view>

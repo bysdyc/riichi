@@ -1,0 +1,30 @@
+﻿
+/* 流局满贯区域 */
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15rpx 0;
+  cursor: pointer;
+  border-top: 2rpx solid #e5e7eb;
+  margin-top: 15rpx;
+}
+
+.section-title {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #374151;
+}
+
+.section-content {
+  padding: 15rpx 0;
+}
+
+.hint-text {
+  font-size: 24rpx;
+  color: #6b7280;
+  margin-top: 15rpx;
+  padding: 10rpx 15rpx;
+  background: #f3f4f6;
+  border-radius: 6rpx;
+}

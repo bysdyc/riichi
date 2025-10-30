@@ -1,0 +1,7 @@
+{
+  "navigationBarTitleText": "游戏进行中",
+  "usingComponents": {
+    "tile-selector": "/components/tile-selector/tile-selector",
+    "yaku-selector": "/components/yaku-selector/yaku-selector"
+  }
+}
