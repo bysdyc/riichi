@@ -1,0 +1,83 @@
+<view class="history-card">
+  <view class="header">
+    <view class="header-left">
+      <text class="round">{{roundLabel}}</text>
+      <text class="type-chip {{typeClass}}">{{typeLabel}}</text>
+    </view>
+    <text class="timestamp">{{timestamp}}</text>
+  </view>
+
+  <view class="summary">
+    <text class="summary-main">{{resultMain}}</text>
+    <text class="summary-sub" wx:if="{{resultSub}}">{{resultSub}}</text>
+  </view>
+
+  <view class="meta" wx:if="{{hanFuLabel || scoreLabel}}">
+    <text class="hanfu" wx:if="{{hanFuLabel}}">{{hanFuLabel}}</text>
+    <text class="score" wx:if="{{scoreLabel}}">{{scoreLabel}}</text>
+  </view>
+
+  <view class="status-tags" wx:if="{{statusTags.length}}">
+    <text class="status-tag" wx:for="{{statusTags}}" wx:for-item="tag" wx:key="*this">{{tag}}</text>
+  </view>
+
+  <view class="info-row" wx:if="{{riichiLabel}}">{{riichiLabel}}</view>
+
+  <view class="multi-summary" wx:if="{{multiSummary}}">{{multiSummary}}</view>
+  <view class="multi-detail" wx:if="{{multiDetails.length}}">
+    <view class="multi-detail-row" wx:for="{{multiDetails}}" wx:for-item="detail" wx:for-index="idx" wx:key="idx">
+      <text class="multi-name">{{detail.name}}</text>
+      <text class="multi-hanfu" wx:if="{{detail.hanFuLabel}}">{{detail.hanFuLabel}}</text>
+      <text class="multi-points">{{detail.pointsLabel}}</text>
+      <text class="multi-bonus" wx:if="{{detail.bonusLabel}}">{{detail.bonusLabel}}</text>
+    </view>
+  </view>
+
+  <view class="players" wx:if="{{playerRows.length}}">
+    <view class="players-head">
+      <text class="col-name">玩家</text>
+      <text class="col-delta">得失</text>
+      <text class="col-score">终局点</text>
+    </view>
+    <view class="players-row" wx:for="{{playerRows}}" wx:for-item="player" wx:for-index="idx" wx:key="idx">
+      <text class="col-name">{{player.name}}</text>
+      <text class="col-delta {{player.deltaClass}}">{{player.deltaLabel}}</text>
+      <text class="col-score">{{player.finalScoreLabel}}</text>
+    </view>
+  </view>
+
+  <view class="toggle" wx:if="{{hasDetails}}">
+    <text class="toggle-link" bindtap="onToggle">{{expanded ? '收起详情' : '展开详情'}}</text>
+  </view>
+
+  <view class="detail-panel" wx:if="{{expanded}}">
+    <view class="hand-section" wx:if="{{showHand}}">
+      <view class="hand-row" wx:if="{{handTiles.length}}">
+        <text class="hand-label">手牌</text>
+        <view class="tile-list">
+          <text wx:for="{{handTiles}}" wx:for-item="tile" wx:for-index="idx" wx:key="idx" class="tile {{tile.className}}">{{tile.label}}</text>
+        </view>
+      </view>
+      <view class="hand-row" wx:if="{{winTile}}">
+        <text class="hand-label">和牌</text>
+        <text class="tile tile-win {{winTile.className}}">{{winTile.label}}</text>
+      </view>
+      <view class="melds" wx:if="{{melds.length}}">
+        <view class="meld" wx:for="{{melds}}" wx:for-item="meld" wx:for-index="idx" wx:key="idx">
+          <text class="meld-type">{{meld.typeLabel}}</text>
+          <view class="tile-list">
+            <text wx:for="{{meld.tiles}}" wx:for-item="tile" wx:for-index="tileIdx" wx:key="tileIdx" class="tile {{tile.className}}">{{tile.label}}</text>
+          </view>
+        </view>
+      </view>
+      <view class="dora-row" wx:if="{{doraCounts}}">
+        <text class="meta-label">宝牌</text>
+        <text class="meta-value">{{doraCounts}}</text>
+      </view>
+      <view class="dora-row" wx:if="{{doraBreakdown && doraBreakdown !== '暂无额外宝牌'}}">
+        <text class="meta-label">说明</text>
+        <text class="meta-value">{{doraBreakdown}}</text>
+      </view>
+    </view>
+  </view>
+</view>

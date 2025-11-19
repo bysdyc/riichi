@@ -1,0 +1,688 @@
+<view class="page" wx:if="{{loaded}}">
+  <scroll-view class="page-scroll" scroll-y="true" enable-flex="true">
+    <view class="content-stack">
+      <view class="header card">
+        <view class="header-top">
+          <view class="round-display">
+            <text class="round">{{roundDisplay}}</text>
+            <text class="honba">本场 {{gameState.honba}}</text>
+          </view>
+          <view class="header-buttons">
+            <button wx:if="{{isGameOver}}" size="mini" class="primary" bindtap="onOpenGameOverDialog">结算</button>
+            <button size="mini" class="ghost" bindtap="onOpenHistory">历史</button>
+            <button size="mini" class="ghost" bindtap="onOpenExport">导出</button>
+          </view>
+        </view>
+        <view class="header-bottom">
+          <text class="riichi">立直棒：{{gameState.riichiSticks}}</text>
+        </view>
+        <view class="status" wx:if="{{isGameOver}}">
+          <text class="status-text">对局已结束</text>
+        </view>
+      </view>
+
+      <view class="card players-section">
+        <view class="section-head">
+          <text class="section-title">玩家面板</text>
+          <text class="section-subtitle">点数与立直状态一目了然</text>
+        </view>
+        <view class="players-grid">
+          <block wx:for="{{players}}" wx:key="id">
+            <view class="player-card {{index === currentDealerIndex ? 'dealer' : ''}}">
+              <view class="player-top">
+                <text class="wind">{{item.wind}}</text>
+                <text class="riichi-tag" wx:if="{{item.isRiichi}}">立直</text>
+              </view>
+              <input
+                class="name-input"
+                value="{{item.name}}"
+                maxlength="6"
+                data-index="{{index}}"
+                bindinput="onPlayerNameInput"
+                placeholder="玩家名称"
+              />
+              <view class="player-bottom">
+                <text class="score">{{item.score}}</text>
+                <button size="mini" class="riichi-toggle {{item.isRiichi ? 'active' : ''}}" data-index="{{index}}" bindtap="onTogglePlayerRiichi">
+                  {{item.isRiichi ? '取消立直' : '宣告立直'}}
+                </button>
+              </view>
+            </view>
+          </block>
+        </view>
+      </view>
+
+      <view class="card actions">
+        <view class="section-head">
+          <text class="section-title">快速结算</text>
+          <text class="section-subtitle">选择本局最终结果</text>
+        </view>
+        <view class="action-buttons">
+          <button class="action-single-win" bindtap="onStartSingleWin">单人和牌</button>
+          <button class="action-multi-win" bindtap="onStartMultiWin">多人和牌</button>
+          <button class="action-draw" bindtap="onStartDraw">流局</button>
+        </view>
+
+      </view>
+    </view>
+  </scroll-view>
+
+  <toast-layer visible="{{toast.visible}}" message="{{toast.message}}" />
+  
+  <game-over-dialog
+    visible="{{showGameOverDialog}}"
+    players="{{players}}"
+    game-state="{{gameState}}"
+    game-settings="{{gameSettings}}"
+    round-history="{{roundHistory}}"
+    bindviewhistory="onGameOverViewHistory"
+    bindclose="onGameOverClose"
+  />
+  
+  <draw-dialog
+    visible="{{showDrawDialog}}"
+    players="{{players}}"
+    draw-type="{{drawType}}"
+    tenpai-selection="{{drawTenpaiSelection}}"
+    nagashi-selection="{{drawNagashiPlayers}}"
+    show-nagashi="{{drawShowNagashi}}"
+    score-preview="{{drawScorePreview}}"
+    score-error="{{drawScoreError}}"
+    bindtoggletype="onDrawToggleType"
+    bindtoggletenpai="onDrawToggleTenpai"
+    bindtogglenagashi="onDrawToggleNagashiPlayer"
+    bindtogglenagashipanel="onDrawToggleNagashiPanel"
+    bindconfirm="onDrawConfirm"
+    bindcancel="onDrawCancel"
+  />
+
+  <view class="overlay" wx:if="{{showMultiWinPanel}}" bindtap="onCloseMultiWin">
+    <view class="panel-shell" catchtap="noop">
+      <view class="panel-header panel-header-fixed">
+        <text class="panel-title">多人和牌结算</text>
+        <button size="mini" class="ghost panel-close" bindtap="onCloseMultiWin">×</button>
+      </view>
+      <scroll-view class="panel-scroll" scroll-y="true">
+        <view class="result-panel card">
+
+          <multi-win-config
+            players="{{players}}"
+            winners="{{multiWinWinners}}"
+            loserIndex="{{multiWinLoser}}"
+            hanFuMap="{{multiWinHanFu}}"
+            honba="{{gameState.honba || 0}}"
+            bindtogglewinner="onMultiWinToggleWinner"
+            bindloserchange="onMultiWinLoserChange"
+            bindhanchange="onMultiWinHanChange"
+            bindfuchange="onMultiWinFuChange"
+          />
+
+          <view class="panel-section">
+            <text class="section-label">得失分预览</text>
+            <view class="score-preview" wx:if="{{multiWinScorePreview}}">
+              <text class="score-summary">{{multiWinScorePreview.summary}}</text>
+              <view class="multi-winner-detail" wx:if="{{multiWinScorePreview.winnerDetails && multiWinScorePreview.winnerDetails.length}}">
+                <block wx:for="{{multiWinScorePreview.winnerDetails}}" wx:for-item="detail" wx:key="index">
+                  <view class="multi-winner-row">
+                    <view class="multi-winner-head">
+                      <text class="multi-winner-name">{{detail.name}}</text>
+                      <view class="multi-winner-meta">
+                        <text>{{detail.han}}番</text>
+                        <text wx:if="{{detail.fu !== '—'}}"> {{detail.fu}}符</text>
+                      </view>
+                    </view>
+                    <view class="multi-winner-points">
+                      <text>基础 {{detail.points}} 点</text>
+                      <text wx:if="{{detail.bonus}}">，立直棒 +{{detail.bonus}}</text>
+                    </view>
+                  </view>
+                </block>
+              </view>
+              <view class="score-delta-list">
+                <view class="score-delta" wx:for="{{multiWinScorePreview.changes}}" wx:key="name">
+                  <text class="score-name">{{item.name}}</text>
+                  <text class="score-value {{item.delta >= 0 ? 'positive' : 'negative'}}">
+                    {{item.deltaLabel}}
+                  </text>
+                </view>
+              </view>
+            </view>
+            <text class="analysis-hint" wx:elif="{{multiWinScoreError}}">{{multiWinScoreError}}</text>
+            <text class="analysis-hint" wx:else>选择和牌者、放铳者并设置番符后，将展示本局分数变化。</text>
+          </view>
+
+          <view class="panel-actions">
+            <button class="secondary" bindtap="onCloseMultiWin">取消</button>
+            <button class="primary" bindtap="onMultiWinConfirm">确认结算</button>
+          </view>
+        </view>
+      </scroll-view>
+    </view>
+  </view>
+
+  <view class="overlay" wx:if="{{showSingleWinPanel}}" bindtap="onCloseSingleWin">
+    <view class="panel-shell" catchtap="noop">
+      <view class="panel-header panel-header-fixed">
+        <text class="panel-title">单人和牌结算</text>
+        <button size="mini" class="ghost panel-close" bindtap="onCloseSingleWin">×</button>
+      </view>
+      <scroll-view class="panel-scroll" scroll-y="true">
+        <view class="result-panel card">
+
+          <view class="panel-section card section-win-type">
+            <view class="section-header">
+              <text class="section-label">和牌类型</text>
+              <button
+                    size="mini"
+                    data-mode="tsumo"
+                    class="chip-button {{singleWinForm.mode === 'tsumo' ? 'chip-active' : ''}}"
+                    bindtap="onSingleWinModeChange"
+                >自摸</button>
+                <button
+                    size="mini"
+                    data-mode="ron"
+                    class="chip-button {{singleWinForm.mode === 'ron' ? 'chip-active' : ''}}"
+                    bindtap="onSingleWinModeChange"
+                >荣和</button>
+              
+            </view>
+
+          </view>
+
+          <view class="panel-section card section-winner">
+            <view class="section-header">
+              <text class="section-label">和牌者</text>
+              <view
+                class="chip-choice {{index === singleWinForm.winnerIndex ? 'active' : ''}}"
+                wx:for="{{players}}"
+                wx:key="id"
+                data-index="{{index}}"
+                bindtap="onSingleWinWinnerChange"
+              >
+                <text>{{item.name}}</text>
+              </view>
+            </view>
+          </view>
+
+          <view class="panel-section card section-loser" wx:if="{{singleWinForm.mode === 'ron'}}">
+            <view class="section-header">
+              <text class="section-label">放铳者</text>
+              <block wx:for="{{players}}" wx:key="id">
+                <view
+                  class="chip-choice {{index === singleWinForm.loserIndex ? 'active' : ''}}"
+                  wx:if="{{index !== singleWinForm.winnerIndex}}"
+                  data-index="{{index}}"
+                  bindtap="onSingleWinLoserChange"
+                >
+                  <text>{{item.name}}</text>
+                </view>
+              </block>
+            </view>
+          </view>
+
+          <view class="panel-section card section-calc-mode">
+            <view class="section-header">
+              <text class="section-label">番符模式</text>
+              <button
+                size="mini"
+                data-mode="auto"
+                class="chip-button {{singleWinCalcMode === 'auto' ? 'chip-active' : ''}}"
+                bindtap="onSingleWinAnalysisModeChange"
+              >自动分析</button>
+              <button
+                size="mini"
+                data-mode="manual"
+                class="chip-button {{singleWinCalcMode === 'manual' ? 'chip-active' : ''}}"
+                bindtap="onSingleWinAnalysisModeChange"
+              >手动模式</button>
+              <button
+                size="mini"
+                data-mode="expert"
+                class="chip-button {{singleWinCalcMode === 'expert' ? 'chip-active' : ''}}"
+                bindtap="onSingleWinAnalysisModeChange"
+              >老手模式</button>
+            </view>
+          </view>
+
+          <view class="panel-section card" wx:if="{{singleWinCalcMode === 'auto'}}">
+            <view class="section-header">
+              <text class="section-label">牌姿录入</text>
+              <text class="section-hint">手牌 {{singleWinHandTiles.length}}/{{singleWinMaxHandTiles}} 张 · 副露 {{singleWinMelds.length}} 组</text>
+            </view>
+
+            <view class="tile-block {{singleWinTileTarget === 'hand' ? 'tile-block-active' : ''}}" data-target="hand" bindtap="onChangeTileTarget">
+              <view class="tile-block-header">
+                <text>手牌</text>
+                <button size="mini" class="ghost" catchtap="onClearSingleWinHand" wx:if="{{singleWinHandTiles.length}}">清空</button>
+              </view>
+              <view class="tile-chip-list">
+                <block wx:for="{{singleWinHandTiles}}" wx:key="*this">
+                  <view class="tile-chip tile-{{singleWinHandTileSuits[index] || 'man'}}">
+                    <text>{{item}}</text>
+                    <button class="tile-remove" data-index="{{index}}" bindtap="onRemoveHandTile">×</button>
+                  </view>
+                </block>
+                <text class="tile-empty" wx:if="{{singleWinHandTiles.length === 0}}">从下方牌池点击录入 13 张手牌</text>
+              </view>
+            </view>
+
+            <view class="tile-block {{singleWinTileTarget === 'win' ? 'tile-block-active' : ''}}" data-target="win" bindtap="onChangeTileTarget">
+              <view class="tile-block-header">
+                <text>和牌</text>
+                <view class="tile-win-display tile-win-{{singleWinWinTileSuit || 'default'}}">
+                  <text wx:if="{{singleWinWinTile}}" class="tile-face">{{singleWinWinTile}}</text>
+                  <text class="tile-empty" wx:else>未设置和牌</text>
+                </view>
+                <button size="mini" class="ghost" wx:if="{{singleWinWinTile}}" catchtap="onClearWinTile">清除</button>
+              </view>
+            </view>
+
+            <view class="tile-block {{singleWinTileTarget === 'meld' ? 'tile-block-active' : ''}}" data-target="meld" bindtap="onChangeTileTarget">
+              <view class="tile-block-header">
+                <text>副露</text>
+                <button size="mini" class="ghost" catchtap="onClearSingleWinMelds" wx:if="{{singleWinMelds.length}}">清空</button>
+              </view>
+              <view class="meld-config" wx:if="{{singleWinTileTarget === 'meld'}}">
+                <view class="meld-buttons">
+                  <button size="mini" data-type="shuntsu" class="chip-button {{pendingMeldType === 'shuntsu' ? 'chip-active' : ''}}" bindtap="onSelectMeldType">顺子</button>
+                  <button size="mini" data-type="pon" class="chip-button {{pendingMeldType === 'pon' ? 'chip-active' : ''}}" bindtap="onSelectMeldType">刻子</button>
+                  <button size="mini" data-type="minkan" class="chip-button {{pendingMeldType === 'minkan' ? 'chip-active' : ''}}" bindtap="onSelectMeldType">明杠</button>
+                  <button size="mini" data-type="ankan" class="chip-button {{pendingMeldType === 'ankan' ? 'chip-active' : ''}}" bindtap="onSelectMeldType">暗杠</button>
+                </view>
+                <text class="analysis-hint">选择副露类型后，从下方牌池点选对应牌；
+                顺子请点起始牌，系统会自动补全。</text>
+              </view>
+              <text class="analysis-hint muted" wx:if="{{singleWinTileTarget !== 'meld' && !singleWinMelds.length}}">点击副露区域可配置副露类型</text>
+              <view class="meld-list">
+                <meld-panel melds="{{singleWinMelds}}" bindremove="onMeldRemove" />
+              </view>
+            </view>
+
+            <view class="panel-section card tenpai-analysis-section" wx:if="{{singleWinHandTiles.length === singleWinMaxHandTiles}}">
+              <view class="section-header">
+                <text class="section-label">听牌分析</text>
+                <view class="section-actions">
+                  <text class="section-hint" wx:if="{{singleWinTenpaiWaits.length}}">共 {{singleWinTenpaiWaits.length}} 种和牌</text>
+                  <button size="mini" class="ghost toggle-btn" bindtap="onToggleTenpaiPanel">
+                    {{singleWinTenpaiExpanded ? '收起' : '展开'}}
+                  </button>
+                </view>
+              </view>
+              <view wx:if="{{singleWinTenpaiExpanded}}">
+                <view class="tenpai-list" wx:if="{{singleWinTenpaiWaits.length}}">
+                  <block wx:for="{{singleWinTenpaiWaits}}" wx:for-item="wait" wx:key="tile">
+                    <view class="tenpai-item">
+                      <view class="tenpai-head">
+                        <text class="tenpai-tile">{{wait.tile}}</text>
+                        <text class="tenpai-score">{{wait.scoreLabel}}</text>
+                      </view>
+                      <text class="tenpai-meta">{{wait.han}}番 {{wait.fu}}符</text>
+                      <text class="tenpai-yaku">{{wait.yaku}}</text>
+                    </view>
+                  </block>
+                </view>
+                <text class="analysis-hint" wx:elif="{{singleWinTenpaiStatus}}">{{singleWinTenpaiStatus}}</text>
+                <text class="analysis-hint" wx:else>录入完整手牌后显示听牌结果。</text>
+              </view>
+            </view>
+
+            <view class="tile-picker-card">
+              <tile-picker bindselect="onTileSelect" tile-usage="{{singleWinTileUsage}}" />
+            </view>
+          </view>
+
+          <view class="panel-section card status-section" wx:if="{{singleWinCalcMode === 'auto'}}">
+            <view class="section-header">
+              <view class="status-header-left">
+                <text class="section-label">状况役</text>
+                <text class="section-hint">选择和牌时的特殊状况</text>
+              </view>
+              <button size="mini" class="ghost toggle-btn" bindtap="onToggleStatusPanel">
+                {{singleWinStatusExpanded ? '收起' : '展开'}}
+              </button>
+            </view>
+            
+            <view class="status-summary">
+              <view class="status-pill-group">
+                <text class="status-pill-label">牌型：</text>
+                <text class="status-pill {{singleWinStatus.isMenzen ? 'positive' : 'warning'}}">{{singleWinStatus.isMenzen ? '✓ 门清' : '✗ 有副露'}}</text>
+              </view>
+              <view class="status-pill-group" wx:if="{{singleWinStatus.isRiichi || singleWinStatus.isDoubleRiichi || singleWinStatus.isIppatsu}}">
+                <text class="status-pill-label">立直：</text>
+                <text class="status-pill active" wx:if="{{singleWinStatus.isRiichi}}">立直 1番</text>
+                <text class="status-pill active" wx:if="{{singleWinStatus.isDoubleRiichi}}">二立直 2番</text>
+                <text class="status-pill active" wx:if="{{singleWinStatus.isIppatsu}}">一发 +1番</text>
+              </view>
+              <view class="status-pill-group" wx:if="{{singleWinStatus.isTenhou || singleWinStatus.isChiihou || singleWinStatus.isRenhou}}">
+                <text class="status-pill-label">特殊：</text>
+                <text class="status-pill yakuman" wx:if="{{singleWinStatus.isTenhou}}">天和 役满</text>
+                <text class="status-pill yakuman" wx:if="{{singleWinStatus.isChiihou}}">地和 役满</text>
+                <text class="status-pill special" wx:if="{{singleWinStatus.isRenhou}}">人和 跳满</text>
+              </view>
+              <view class="status-pill-group" wx:if="{{singleWinStatus.isHaitei || singleWinStatus.isHoutei || singleWinStatus.isRinshan || singleWinStatus.isChankan}}">
+                <text class="status-pill-label">其他：</text>
+                <text class="status-pill active" wx:if="{{singleWinStatus.isHaitei}}">海底 1番</text>
+                <text class="status-pill active" wx:if="{{singleWinStatus.isHoutei}}">河底 1番</text>
+                <text class="status-pill active" wx:if="{{singleWinStatus.isRinshan}}">岭上 1番</text>
+                <text class="status-pill active" wx:if="{{singleWinStatus.isChankan}}">抢杠 1番</text>
+              </view>
+            </view>
+
+            <view wx:if="{{singleWinStatusExpanded}}">
+              <view class="status-category">
+                <text class="status-category-title">
+                  <text class="category-icon">💎</text>
+                  <text>立直系</text>
+                </text>
+                <text class="status-category-hint">需要和牌者已宣告立直且门前清</text>
+              </view>
+              <view class="status-grid secondary">
+                <button
+                  class="status-btn {{singleWinStatus.isRiichi ? 'active' : ''}}"
+                  bindtap="onToggleStatusRiichi"
+                  disabled="{{!singleWinStatus.isMenzen || !players[singleWinForm.winnerIndex].isRiichi}}"
+                >
+                  <text class="status-btn-name">立直（1番）</text>
+                </button>
+                <button
+                  class="status-btn {{singleWinStatus.isDoubleRiichi ? 'active' : ''}}"
+                  bindtap="onToggleStatusDoubleRiichi"
+                  disabled="{{!singleWinStatus.isMenzen || !players[singleWinForm.winnerIndex].isRiichi}}"
+                >
+                  <text class="status-btn-name">二立直（2番）</text>
+                </button>
+                <button
+                  class="status-btn {{singleWinStatus.isIppatsu ? 'active' : ''}}"
+                  bindtap="onToggleStatusIppatsu"
+                  disabled="{{!(singleWinStatus.isRiichi || singleWinStatus.isDoubleRiichi)}}"
+                >
+                  <text class="status-btn-name">一发（+1番）</text>
+                </button>
+              </view>
+
+              <view class="status-category">
+                <text class="status-category-title">
+                  <text class="category-icon">⭐</text>
+                  <text>役满/特殊役</text>
+                </text>
+                <text class="status-category-hint">配牌即和或第一巡和牌（需门前清）</text>
+              </view>
+              <view class="status-grid secondary">
+                <button
+                  class="status-btn {{singleWinStatus.isTenhou ? 'active' : ''}}"
+                  data-status="isTenhou"
+                  bindtap="onToggleStatusGeneric"
+                  disabled="{{!singleWinStatus.isMenzen}}"
+                >
+                  <text class="status-btn-name">天和（役满）</text>
+                </button>
+                <button
+                  class="status-btn {{singleWinStatus.isChiihou ? 'active' : ''}}"
+                  data-status="isChiihou"
+                  bindtap="onToggleStatusGeneric"
+                  disabled="{{!singleWinStatus.isMenzen}}"
+                >
+                  <text class="status-btn-name">地和（役满）</text>
+                </button>
+                <button
+                  class="status-btn {{singleWinStatus.isRenhou ? 'active' : ''}}"
+                  data-status="isRenhou"
+                  bindtap="onToggleStatusGeneric"
+                  disabled="{{!singleWinStatus.isMenzen}}"
+                >
+                  <text class="status-btn-name">人和（跳满）</text>
+                </button>
+              </view>
+
+              <view class="status-category">
+                <text class="status-category-title">
+                  <text class="category-icon">🎯</text>
+                  <text>牌山边缘</text>
+                </text>
+                <text class="status-category-hint">最后一张牌和牌</text>
+              </view>
+              <view class="status-grid secondary">
+                <button
+                  class="status-btn {{singleWinStatus.isHaitei ? 'active' : ''}}"
+                  data-status="isHaitei"
+                  bindtap="onToggleStatusGeneric"
+                >
+                  <text class="status-btn-name">海底捞月（1番）</text>
+                </button>
+                <button
+                  class="status-btn {{singleWinStatus.isHoutei ? 'active' : ''}}"
+                  data-status="isHoutei"
+                  bindtap="onToggleStatusGeneric"
+                >
+                  <text class="status-btn-name">河底摸鱼（1番）</text>
+                </button>
+              </view>
+
+              <view class="status-category">
+                <text class="status-category-title">
+                  <text class="category-icon">🎴</text>
+                  <text>杠相关</text>
+                </text>
+                <text class="status-category-hint">与杠相关的和牌</text>
+              </view>
+              <view class="status-grid secondary">
+                <button
+                  class="status-btn {{singleWinStatus.isRinshan ? 'active' : ''}}"
+                  data-status="isRinshan"
+                  bindtap="onToggleStatusGeneric"
+                >
+                  <text class="status-btn-name">岭上开花（1番）</text>
+                </button>
+                <button
+                  class="status-btn {{singleWinStatus.isChankan ? 'active' : ''}}"
+                  data-status="isChankan"
+                  bindtap="onToggleStatusGeneric"
+                >
+                  <text class="status-btn-name">抢杠（1番）</text>
+                </button>
+              </view>
+
+              <view class="status-tips">
+                <text class="status-tip-item">💡 提示：天和/地和/人和互斥</text>
+                <text class="status-tip-item">💡 提示：海底/河底互斥，岭上/抢杠互斥</text>
+                <text class="status-tip-item">💡 提示：选择特定状况役会自动切换和牌模式</text>
+              </view>
+            </view>
+          </view>
+
+          <view class="panel-section card">
+            <view class="section-header">
+              <text class="section-label">宝牌计数</text>
+              <text class="section-hint">{{singleWinDoraSummary.breakdown}}</text>
+            </view>
+            <view class="dora-grid">
+              <dora-counter label="宝牌" value="{{singleWinDora.dora}}" max="{{singleWinDoraLimits.dora}}" data-type="dora" bindchange="onDoraChange" />
+              <dora-counter label="里宝牌" value="{{singleWinDora.uraDora}}" max="{{singleWinDoraLimits.uraDora}}" data-type="uraDora" bindchange="onDoraChange" />
+              <dora-counter label="赤宝牌" value="{{singleWinDora.redDora}}" max="{{singleWinDoraLimits.redDora}}" data-type="redDora" bindchange="onDoraChange" />
+            </view>
+            <text class="dora-note" wx:if="{{!singleWinDoraSummary.allowUra}}">⚠️ 立直后才会计入里宝牌番数</text>
+          </view>
+
+          <view class="panel-section card" wx:if="{{singleWinCalcMode === 'auto'}}">
+            <view class="section-header">
+              <text class="section-label">自动番符结果</text>
+              <text class="section-hint" wx:if="{{singleWinAnalysis}}">共 {{singleWinAnalysis.han}} 番 · {{singleWinAnalysis.fu}} 符</text>
+            </view>
+            <view class="analysis" wx:if="{{singleWinAnalysis}}">
+              <text class="analysis-line">
+                番数：{{singleWinAnalysis.baseHan}}番
+                <text wx:if="{{singleWinAnalysis.bonusHan}}"> + 宝牌{{singleWinAnalysis.bonusHan}}番</text>
+                <text class="analysis-total">= {{singleWinAnalysis.han}}番</text>
+              </text>
+              <text class="analysis-line">符数：{{singleWinAnalysis.fu}}符</text>
+              <text class="analysis-hint" wx:if="{{singleWinAnalysis.doraBreakdown.bonus}}">{{singleWinAnalysis.doraBreakdown.breakdown}}</text>
+              <view class="yaku-list" wx:if="{{singleWinAnalysis.yaku && singleWinAnalysis.yaku.length}}">
+                <text class="yaku-tag" wx:for="{{singleWinAnalysis.yaku}}" wx:key="*this">{{item}}</text>
+              </view>
+            </view>
+            <text class="analysis-hint" wx:elif="{{singleWinAnalysisError}}">{{singleWinAnalysisError}}</text>
+            <text class="analysis-hint" wx:else>录入完整牌姿后自动计算番符，或继续调整番数与符数。</text>
+          </view>
+
+          <view class="panel-section card" wx:if="{{singleWinCalcMode === 'manual'}}">
+            <view class="section-header">
+              <text class="section-label">手动模式</text>
+              <text class="section-hint">选择役种与符数，系统会校验冲突</text>
+            </view>
+            <view class="manual-section">
+              <text class="manual-note">💡 手动模式：选择役种与符数，系统会校验冲突并参与结算。</text>
+              <view class="manual-selected">
+                <text class="manual-subtitle">已选役种（{{singleWinManualYaku.length}}）</text>
+                <view class="manual-selected-list" wx:if="{{singleWinManualYaku.length}}">
+                  <block wx:for="{{singleWinManualYaku}}" wx:key="*this">
+                    <view class="manual-chip">
+                      <text>{{manualYakuMap[item] ? manualYakuMap[item].name : item}}</text>
+                      <button class="manual-chip-remove" data-yakuid="{{item}}" bindtap="onManualYakuRemove">×</button>
+                    </view>
+                  </block>
+                </view>
+                <text class="manual-placeholder" wx:else>未选择役种</text>
+              </view>
+              <block wx:for="{{manualYakuGroups}}" wx:key="id" wx:for-item="group">
+                <view class="manual-group">
+                  <text class="manual-group-title">{{group.title}}</text>
+                  <view class="manual-grid">
+                    <block wx:for="{{group.list}}" wx:key="id" wx:for-item="yaku">
+                      <button
+                        class="manual-yaku-btn {{singleWinManualActiveMap[yaku.id] ? 'active' : ''}}"
+                        data-yakuid="{{yaku.id}}"
+                        bindtap="onManualYakuToggle"
+                      >{{yaku.name}}</button>
+                    </block>
+                  </view>
+                </view>
+              </block>
+              <view class="manual-subsection">
+                <text class="manual-group-title">符数设置</text>
+                <view class="manual-fu-grid">
+                  <block wx:for="{{manualFuPresetsRow1}}" wx:key="*this">
+                    <button
+                      class="manual-fu-btn {{item === singleWinManualFu ? 'active' : ''}}"
+                      data-fu="{{item}}"
+                      bindtap="onManualFuSelect"
+                    >{{item}}符</button>
+                  </block>
+                </view>
+                <view class="manual-fu-grid manual-fu-grid-row2">
+                  <block wx:for="{{manualFuPresetsRow2}}" wx:key="*this">
+                    <button
+                      class="manual-fu-btn {{item === singleWinManualFu ? 'active' : ''}}"
+                      data-fu="{{item}}"
+                      bindtap="onManualFuSelect"
+                    >{{item}}符</button>
+                  </block>
+                </view>
+                <text class="manual-hint">提示：平和自摸 20 符 / 荣和 30 符，七对子 25 符，常规和牌多为 40 符起。</text>
+              </view>
+              <view class="manual-furo">
+                <text>是否有副露（影响部分役种番数）</text>
+                <switch checked="{{singleWinManualFuro}}" bindchange="onManualFuroToggle" />
+              </view>
+              <text class="manual-hint">{{singleWinManualFuro ? '⚠️ 副露模式：有副露减番的役种将使用副露番数。' : '✅ 门清模式：使用完整番数。'}}</text>
+              <view class="manual-conflicts" wx:if="{{singleWinManualConflicts.length}}">
+                <block wx:for="{{singleWinManualConflicts}}" wx:key="*this">
+                  <text>• {{item}}</text>
+                </block>
+              </view>
+              <view class="manual-summary">
+                <text>当前番数：{{singleWinManualHan}}番</text>
+                <text>符数：{{singleWinManualFu}}符</text>
+              </view>
+            </view>
+          </view>
+
+          <view class="panel-section card" wx:if="{{singleWinCalcMode === 'expert'}}">
+            <view class="section-header">
+              <text class="section-label">老手模式</text>
+              <text class="section-hint">直接录入番符，快速完成结算</text>
+            </view>
+            <view class="expert-section">
+              <text class="expert-note">⚡ 老手模式：直接录入番数与符数，快速完成结算。</text>
+              <view class="expert-block">
+                <text class="manual-group-title">番数</text>
+                <view class="expert-grid">
+                  <block wx:for="{{expertHanPresets}}" wx:key="*this">
+                    <button
+                      class="preset-btn {{item === singleWinExpertHan ? 'active' : ''}}"
+                      data-han="{{item}}"
+                      bindtap="onExpertHanPresetTap"
+                    >{{item}}番</button>
+                  </block>
+                </view>
+                <view class="expert-input">
+                  <text>自定义番数</text>
+                  <input
+                    type="number"
+                    value="{{singleWinExpertHan === null ? '' : singleWinExpertHan}}"
+                    data-field="han"
+                    bindinput="onSingleWinInput"
+                  />
+                </view>
+              </view>
+              <view class="expert-block">
+                <text class="manual-group-title">符数</text>
+                <view class="expert-fu-grid">
+                  <block wx:for="{{expertFuPresets}}" wx:key="*this">
+                    <button
+                      class="preset-btn {{item === singleWinExpertFu ? 'active' : ''}}"
+                      data-fu="{{item}}"
+                      bindtap="onExpertFuPresetTap"
+                    >{{item}}符</button>
+                  </block>
+                </view>
+                <view class="expert-input">
+                  <text>自定义符数</text>
+                  <input
+                    type="number"
+                    value="{{singleWinExpertFu === null ? '' : singleWinExpertFu}}"
+                    data-field="fu"
+                    bindinput="onSingleWinInput"
+                  />
+                </view>
+              </view>
+              <view class="expert-summary">
+                <text>当前设置：{{singleWinExpertHan === null ? '—' : singleWinExpertHan}}番 {{singleWinExpertFu === null ? '—' : singleWinExpertFu}}符</text>
+                <text wx:if="{{singleWinExpertHan >= 13}}">提示：番数已达到役满级别。</text>
+              </view>
+            </view>
+          </view>
+
+          <view class="panel-section card">
+            <view class="section-header">
+              <text class="section-label">得失分预览</text>
+              <text class="section-hint" wx:if="{{singleWinScorePreview}}">{{singleWinScorePreview.summary}}</text>
+            </view>
+            <view class="score-preview" wx:if="{{singleWinScorePreview}}">
+              <view class="score-delta-list">
+                <view class="score-delta" wx:for="{{singleWinScorePreview.changes}}" wx:key="name">
+                  <text class="score-name">{{item.name}}</text>
+                  <text class="score-value {{item.delta >= 0 ? 'positive' : 'negative'}}">
+                    {{item.delta >= 0 ? '+' : ''}}{{item.delta}}
+                  </text>
+                </view>
+              </view>
+            </view>
+            <text class="analysis-hint" wx:elif="{{singleWinScoreError}}">{{singleWinScoreError}}</text>
+            <text class="analysis-hint" wx:else>填写番符并选择相关玩家后，将展示本局分数变化。</text>
+          </view>
+
+          <view class="panel-actions">
+            <button class="secondary" bindtap="onCloseSingleWin">取消</button>
+            <button class="primary" bindtap="onConfirmSingleWin">确认结算</button>
+          </view>
+        </view>
+      </scroll-view>
+    </view>
+  </view>
+</view>
+
+<view class="page loading" wx:else>
+  <view class="card">
+    <text class="title">正在加载对局数据...</text>
+  </view>
+</view>

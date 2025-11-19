@@ -1,0 +1,138 @@
+<view class="multi-win-config">
+  <view class="intro-card">
+    <text class="intro-icon">⚡</text>
+    <view class="intro-text">
+      <text class="intro-title">多人和牌结算</text>
+      <text class="intro-desc">多人荣和同一张牌时，选择全部和牌者及放铳者，番符会自动计算点数。</text>
+    </view>
+  </view>
+
+  <view class="section">
+    <view class="section-header">
+      <text class="section-title">和牌者</text>
+      <text class="section-subtitle">可多选，最多三人</text>
+    </view>
+    <view class="chip-grid two-col">
+      <block wx:for="{{players}}" wx:for-item="player" wx:for-index="index" wx:key="id">
+        <button
+          size="mini"
+          class="chip-button {{winnerActiveMap[index] ? 'active highlight' : ''}}"
+          data-index="{{index}}"
+          bindtap="onToggleWinner"
+        >
+          <text class="chip-name">{{player.name || ('玩家' + (index + 1))}}</text>
+          <text class="chip-wind" wx:if="{{player.wind}}">{{player.wind}}</text>
+        </button>
+      </block>
+    </view>
+    <text class="section-hint">同时选择所有和牌者，系统会自动平均立直棒。</text>
+  </view>
+
+  <view class="section" wx:if="{{winners && winners.length}}">
+    <view class="section-header">
+      <text class="section-title">放铳者</text>
+      <text class="section-subtitle">仅可选择未和牌玩家</text>
+    </view>
+    <view class="chip-grid two-col">
+      <block wx:for="{{availableLosers}}" wx:for-item="player" wx:key="index">
+        <button
+          size="mini"
+          class="chip-button {{player.index === loserIndex ? 'active danger' : ''}}"
+          data-index="{{player.index}}"
+          bindtap="onSelectLoser"
+        >
+          <text class="chip-name">{{player.name}}</text>
+          <text class="chip-wind" wx:if="{{player.wind}}">{{player.wind}}</text>
+        </button>
+      </block>
+    </view>
+    <text class="section-hint">多人和牌默认为荣和，放铳者需单独指定。</text>
+  </view>
+
+  <view class="winner-section" wx:if="{{winnerConfigs.length}}">
+    <view class="section-header">
+      <text class="section-title">番符设置</text>
+      <text class="section-subtitle">为每位和牌者设置番符。</text>
+    </view>
+    <block wx:for="{{winnerConfigs}}" wx:for-item="config" wx:key="index">
+      <view class="winner-card">
+        <view class="winner-head">
+          <view class="winner-meta">
+            <text class="winner-name">{{config.name}}</text>
+            <text class="winner-wind" wx:if="{{config.wind}}">（{{config.wind}}）</text>
+          </view>
+          <text class="winner-level" wx:if="{{config.hanLevel}}">（{{config.hanLevel}}）</text>
+        </view>
+
+        <view class="winner-body">
+          <view class="form-grid">
+            <view class="input-block">
+            <view class="input-label-row">
+              <text class="input-label">番数</text>
+              <text class="input-hint">常见番数一键选择</text>
+            </view>
+              <view class="preset-scroll">
+                <view class="preset-grid">
+                  <block wx:for="{{hanPresetValues}}" wx:for-item="hanValue" wx:key="*this">
+                    <button
+                      size="mini"
+                      class="preset-chip {{config.hanValue === hanValue ? 'active' : ''}}"
+                      data-index="{{config.index}}"
+                      data-value="{{hanValue}}"
+                      bindtap="onPresetHanTap"
+                    >{{hanValue}}</button>
+                  </block>
+                </view>
+              </view>
+              <input
+                type="number"
+                class="number-input"
+                data-index="{{config.index}}"
+                value="{{config.hanInput}}"
+                placeholder="输入番数"
+                bindinput="onHanInput"
+              />
+            </view>
+
+            <view class="input-block" wx:if="{{config.needsFu}}">
+              <view class="input-label-row">
+                <text class="input-label">符数</text>
+                <text class="input-hint">不足 20 符请手动调整</text>
+              </view>
+              <view class="preset-scroll">
+                <view class="preset-grid compact">
+                  <block wx:for="{{fuPresetValues}}" wx:for-item="fuValue" wx:key="*this">
+                    <button
+                      size="mini"
+                      class="preset-chip {{config.fuValue === fuValue ? 'active' : ''}}"
+                      data-index="{{config.index}}"
+                      data-value="{{fuValue}}"
+                      bindtap="onPresetFuTap"
+                    >{{fuValue}}</button>
+                  </block>
+                </view>
+              </view>
+              <input
+                type="number"
+                class="number-input"
+                data-index="{{config.index}}"
+                value="{{config.fuInput}}"
+                placeholder="输入符数"
+                bindinput="onFuInput"
+              />
+            </view>
+          </view>
+
+          <view class="summary-row">
+            <text class="summary-text">
+              {{config.hanValue != null ? config.hanValue + '番' : '番数未设置'}}
+              <text wx:if="{{config.needsFu}}"> · {{config.fuValue != null ? config.fuValue + '符' : '符数未设置'}}</text>
+              <text wx:else> · 役满及以上无需符数</text>
+            </text>
+          </view>
+        </view>
+      </view>
+    </block>
+    <text class="section-hint honba">当前本场数：{{honba}} 本场，结算时自动加算本场棒。</text>
+  </view>
+</view>

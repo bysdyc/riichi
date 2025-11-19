@@ -1,0 +1,14 @@
+<view class="meld-panel">
+  <view class="meld-list" wx:if="{{melds && melds.length}}">
+    <view class="meld-item" wx:for="{{melds}}" wx:for-item="meld" wx:for-index="index" wx:key="{{meld.id || index}}">
+      <view class="meld-info">
+        <text class="meld-type">{{typeLabels[meld.type] || '副露'}}</text>
+        <view class="meld-tiles">
+          <text class="meld-tile" wx:for="{{meld.tiles}}" wx:key="*this">{{item}}</text>
+        </view>
+      </view>
+      <button size="mini" class="remove" data-index="{{index}}" data-id="{{meld.id}}" bindtap="onRemove">移除</button>
+    </view>
+  </view>
+  <text class="placeholder" wx:else>尚未添加副露。</text>
+</view>

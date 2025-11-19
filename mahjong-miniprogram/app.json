@@ -1,0 +1,16 @@
+{
+  "pages": [
+    "pages/landing/index",
+    "pages/game/index",
+    "pages/history/index",
+    "pages/export-preview/index"
+  ],
+  "window": {
+    "navigationBarTitleText": "日本麻将记录器",
+    "navigationBarBackgroundColor": "#0d9488",
+    "navigationBarTextStyle": "white",
+    "backgroundColor": "#f0fdf4",
+    "backgroundTextStyle": "light"
+  },
+  "sitemapLocation": "sitemap.json"
+}

@@ -1,0 +1,300 @@
+.multi-win-config {
+  display: flex;
+  flex-direction: column;
+  gap: 24rpx;
+}
+
+.intro-card {
+  display: flex;
+  gap: 16rpx;
+  padding: 24rpx;
+  background: linear-gradient(135deg, #f8fafc 0%, #eef2ff 100%);
+  border: 2rpx solid #c7d2fe;
+  border-radius: 20rpx;
+  align-items: flex-start;
+}
+
+.intro-icon {
+  font-size: 40rpx;
+  line-height: 1;
+  color: #4338ca;
+}
+
+.intro-text {
+  display: flex;
+  flex-direction: column;
+  gap: 8rpx;
+}
+
+.intro-title {
+  font-size: 30rpx;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.intro-desc {
+  font-size: 26rpx;
+  color: #475569;
+  line-height: 1.5;
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+.section-title {
+  font-size: 30rpx;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.section-subtitle {
+  font-size: 24rpx;
+  color: #64748b;
+}
+
+.section-hint {
+  font-size: 24rpx;
+  color: #94a3b8;
+  line-height: 1.4;
+}
+
+.section-hint.honba {
+  color: #475569;
+  font-weight: 500;
+}
+
+.chip-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12rpx;
+}
+
+.chip-grid.two-col {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12rpx;
+}
+
+.chip-button {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  justify-content: space-between;
+  width: 100%;
+  padding: 16rpx 20rpx;
+  min-height: 72rpx;
+  border-radius: 999rpx;
+  border: 2rpx solid #e2e8f0;
+  background: #f1f5f9;
+  color: #475569;
+  font-size: 26rpx;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+}
+
+.chip-button::after {
+  border: none;
+}
+
+.chip-button.active {
+  background: #4338ca;
+  border-color: #4338ca;
+  color: #ffffff;
+}
+
+.chip-button.active.highlight {
+  background: #a855f7;
+  border-color: #a855f7;
+  color: #ffffff;
+  box-shadow: 0 6rpx 18rpx rgba(168, 85, 247, 0.25);
+}
+
+.chip-button.active.danger {
+  background: #dc2626;
+  border-color: #dc2626;
+  color: #ffffff;
+}
+
+.chip-name {
+  max-width: 200rpx;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-weight: 600;
+}
+
+.chip-wind {
+  font-size: 22rpx;
+  color: inherit;
+  opacity: 0.8;
+}
+
+.winner-section {
+  display: flex;
+  flex-direction: column;
+  gap: 20rpx;
+}
+
+.winner-card {
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+  padding: 24rpx;
+  border-radius: 16rpx;
+  border: 2rpx solid #dbeafe;
+  background: #f8fafc;
+  box-shadow: 0 8rpx 24rpx rgba(15, 23, 42, 0.04);
+}
+
+.winner-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.winner-meta {
+  display: flex;
+  align-items: baseline;
+  gap: 8rpx;
+}
+
+.winner-name {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.winner-wind {
+  font-size: 24rpx;
+  color: #6366f1;
+}
+
+.winner-level {
+  font-size: 24rpx;
+  color: #2563eb;
+}
+
+.winner-body {
+  display: flex;
+  flex-direction: column;
+  gap: 20rpx;
+}
+
+.form-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 20rpx;
+}
+
+.input-block {
+  display: flex;
+  flex-direction: column;
+  gap: 12rpx;
+}
+
+.input-label-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6rpx;
+  margin-bottom: 8rpx;
+}
+
+.input-label {
+  font-size: 26rpx;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.input-hint {
+  font-size: 22rpx;
+  color: #94a3b8;
+  flex: 0 0 auto;
+}
+
+.preset-grid {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 12rpx;
+  min-width: max-content;
+}
+
+.preset-grid.compact {
+  gap: 10rpx;
+}
+
+.preset-scroll {
+  width: 100%;
+  padding-bottom: 4rpx;
+  box-sizing: border-box;
+  margin-bottom: 12rpx;
+  overflow-x: auto;
+}
+
+.preset-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+.preset-chip {
+  padding: 8rpx 16rpx;
+  border-radius: 12rpx;
+  border: 2rpx solid #dbeafe;
+  background: #ffffff;
+  font-size: 24rpx;
+  color: #1d4ed8;
+  transition: all 0.2s ease;
+}
+
+.preset-chip::after {
+  border: none;
+}
+
+.preset-chip.active {
+  background: #2563eb;
+  border-color: #2563eb;
+  color: #ffffff;
+}
+
+.number-input {
+  width: 100%;
+  border-radius: 12rpx;
+  border: 2rpx solid #dbeafe;
+  font-size: 28rpx;
+  color: #0f172a;
+  box-sizing: border-box;
+}
+
+.summary-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.summary-text {
+  font-size: 24rpx;
+  color: #475569;
+}
+
+@media screen and (min-width: 750rpx) {
+  .chip-grid.two-col {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .form-grid {
+    flex-direction: row;
+  }
+
+  .form-grid .input-block {
+    flex: 1;
+  }
+}

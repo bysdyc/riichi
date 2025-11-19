@@ -1,0 +1,27 @@
+<view class="container">
+  <view class="hero card">
+    <text class="title">日本麻将记录器</text>
+    <text class="subtitle">请选择对局类型或继续游戏</text>
+  </view>
+
+  <view class="actions card">
+    <button class="primary" bindtap="onStartTonpuu">东风战</button>
+    <button class="primary" bindtap="onStartHanchan">半庄战</button>
+    <button class="primary" bindtap="onStartYonchan">全庄战</button>
+    <label class="checkbox">
+      <switch checked="{{tobu}}" bindchange="onToggleTobu" />
+      <text>开启击飞（分数小于0 时结束）</text>
+    </label>
+    <label class="checkbox">
+      <switch checked="{{useKlassicYaku}}" bindchange="onToggleKlassicYaku" />
+      <text>开启古役（人和、大车轮等）</text>
+    </label>
+  </view>
+
+  <view class="card" wx:if="{{hasSavedGame}}">
+    <text class="title">发现存档</text>
+    <text class="subtitle">上次进度将被加载</text>
+    <button bindtap="onContinue">继续游戏</button>
+    <button type="warn" bindtap="onClear">清除存档</button>
+  </view>
+</view>

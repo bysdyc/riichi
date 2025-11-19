@@ -1,0 +1,122 @@
+.tile-picker {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  box-sizing: border-box;
+  border: 2rpx solid #bae6fd;
+  border-radius: 16rpx;
+  background: #ecfeff;
+  overflow: hidden;
+}
+
+.picker-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16rpx 20rpx;
+  background: linear-gradient(135deg, #ecfeff 0%, #cffafe 100%);
+  border-bottom: 2rpx solid #bae6fd;
+  cursor: pointer;
+}
+
+.picker-title {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #0369a1;
+}
+
+.picker-toggle {
+  font-size: 24rpx;
+  color: #0369a1;
+  font-weight: 600;
+}
+
+.picker-content {
+  display: flex;
+  flex-direction: column;
+  gap: 20rpx;
+  padding: 20rpx;
+  max-height: 1000rpx;
+  overflow: hidden;
+  transition: max-height 0.3s ease, padding 0.3s ease, opacity 0.3s ease;
+  opacity: 1;
+}
+
+.picker-content.collapsed {
+  max-height: 0;
+  padding: 0 20rpx;
+  opacity: 0;
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 12rpx;
+}
+
+.section-title {
+  font-size: 26rpx;
+  color: #334155;
+  font-weight: 600;
+}
+
+.tiles {
+  display: grid;
+  gap: 12rpx;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.tile-btn {
+  background: #f1f5f9;
+  color: #0f172a;
+  border: 2rpx solid #cbd5f5;
+  border-radius: 12rpx;
+  padding: 12rpx 0;
+  font-size: 26rpx;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  box-sizing: border-box;
+  transition: transform 0.1s ease, background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
+.tile-btn.tile-man {
+  background: #fef2f2;
+  border-color: #fecaca;
+  color: #b91c1c;
+}
+
+.tile-btn.tile-pin {
+  background: #eff6ff;
+  border-color: #bfdbfe;
+  color: #1d4ed8;
+}
+
+.tile-btn.tile-sou {
+  background: #ecfdf5;
+  border-color: #bbf7d0;
+  color: #047857;
+}
+
+.tile-btn.tile-honor {
+  background: #f5f3ff;
+  border-color: #ddd6fe;
+  color: #5b21b6;
+}
+
+.tile-btn.tile-disabled,
+.tile-btn[disabled] {
+  background: #e2e8f0;
+  border-color: #cbd5f5;
+  color: #94a3b8;
+  opacity: 0.7;
+}
+
+.tile-btn:active {
+  background: #2563eb;
+  color: #ffffff;
+  border-color: #1d4ed8;
+}

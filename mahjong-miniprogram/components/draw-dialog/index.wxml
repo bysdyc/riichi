@@ -1,0 +1,111 @@
+<view wx:if="{{visible}}" class="draw-overlay" bindtap="onBackground" catchtouchmove="preventTouchMove">
+  <view class="dialog-card" catchtap="noop">
+    <view class="dialog-header dialog-header-fixed">
+      <text class="dialog-title">流局结算</text>
+      <button size="mini" class="ghost dialog-close" bindtap="onCancel">×</button>
+    </view>
+
+    <scroll-view scroll-y="{{true}}" class="dialog-scroll dialog-scroll-with-header">
+      <view class="dialog-section">
+        <view class="section-head">
+          <text class="section-title">流局类型</text>
+          <text class="section-hint">起手流局不结算听牌与流满</text>
+        </view>
+        <view class="chip-row">
+          <button
+            size="mini"
+            class="chip {{drawType === 'normal' ? 'active' : ''}}"
+            data-type="normal"
+            bindtap="onSelectType"
+          >普通流局</button>
+          <button
+            size="mini"
+            class="chip {{drawType === 'starting' ? 'active' : ''}}"
+            data-type="starting"
+            bindtap="onSelectType"
+          >起手流局</button>
+        </view>
+      </view>
+
+      <view class="dialog-section" wx:if="{{drawType === 'normal'}}">
+        <view class="section-head">
+          <text class="section-title">听牌玩家</text>
+          <text class="section-hint">听牌平均收取 3000 点</text>
+        </view>
+        <view class="player-grid">
+          <block wx:for="{{players}}" wx:key="index">
+            <view
+              class="player-chip {{tenpaiActiveMap[index] ? 'active' : ''}} {{item.isRiichi ? 'riichi-locked' : ''}}"
+              data-index="{{index}}"
+              bindtap="onToggleTenpai"
+            >
+              <text class="player-name">{{item.name || ('玩家' + (index + 1))}}</text>
+              <text class="player-sub" wx:if="{{item.isRiichi}}">立直听牌</text>
+              <text class="player-sub" wx:elif="{{tenpaiActiveMap[index]}}">听牌</text>
+            </view>
+          </block>
+        </view>
+        <text class="section-hint muted">未听玩家平均支付 3000 点；不足整除时系统自动处理。</text>
+      </view>
+
+      <view class="dialog-section" wx:if="{{drawType === 'normal'}}">
+        <view class="section-head">
+          <text class="section-title">流局满贯</text>
+          <text class="section-hint">起用流局满贯时，选中玩家将按满贯结算</text>
+        </view>
+        <view class="nagashi-toggle" bindtap="onToggleNagashiPanel">
+          <text>{{showNagashi ? '隐藏流满选项' : '选择流满玩家'}}</text>
+          <text class="icon">{{showNagashi ? '－' : '＋'}}</text>
+        </view>
+        <view class="player-grid" wx:if="{{showNagashi}}">
+          <block wx:for="{{players}}" wx:key="index">
+            <view
+              class="player-chip {{nagashiActiveMap[index] ? 'active' : ''}}"
+              data-index="{{index}}"
+              bindtap="onToggleNagashi"
+            >
+              <text class="player-name">{{item.name || ('玩家' + (index + 1))}}</text>
+
+            </view>
+          </block>
+        </view>
+        <text class="section-hint muted">流局满贯与听牌奖励同时生效，庄家流满收 12000 点，其余收 8000 点。</text>
+      </view>
+
+      <view class="dialog-section preview-section">
+        <view class="section-head">
+          <text class="section-title">分数预览</text>
+          <text class="section-hint" wx:if="{{scorePreview && scorePreview.summary}}">{{scorePreview.summary}}</text>
+          <text class="section-hint error" wx:if="{{scoreError}}">{{scoreError}}</text>
+        </view>
+        <view wx:if="{{scorePreview}}">
+          <view class="preview-notes" wx:if="{{scorePreview.detailNotes && scorePreview.detailNotes.length}}">
+            <block wx:for="{{scorePreview.detailNotes}}" wx:key="index">
+              <text class="preview-note">{{item}}</text>
+            </block>
+          </view>
+          <view class="preview-list">
+            <block wx:for="{{scorePreview.playerDeltas}}" wx:key="playerIndex">
+              <view class="preview-row">
+                <view class="preview-name">
+                  <text class="name-text">{{item.name}}</text>
+                  <text class="tag dealer" wx:if="{{item.isDealer}}">庄</text>
+                  <text class="tag" wx:if="{{item.isTenpai}}">听</text>
+                  <text class="tag nagashi" wx:if="{{item.isNagashi}}">流满</text>
+                  <text class="tag riichi" wx:if="{{item.addedRiichiStick}}">立直</text>
+                </view>
+                <text class="preview-delta {{item.delta > 0 ? 'positive' : (item.delta < 0 ? 'negative' : '')}}">{{item.formattedDelta}}</text>
+              </view>
+            </block>
+          </view>
+        </view>
+      </view>
+
+    </scroll-view>
+
+    <view class="dialog-actions">
+      <button size="mini" class="ghost" bindtap="onCancel">取消</button>
+      <button size="mini" class="primary" bindtap="onConfirm">确认</button>
+    </view>
+  </view>
+</view>

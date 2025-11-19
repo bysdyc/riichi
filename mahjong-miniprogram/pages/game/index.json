@@ -1,0 +1,12 @@
+{
+  "navigationBarTitleText": "对局记录",
+  "usingComponents": {
+    "toast-layer": "../../components/toast-layer/index",
+    "tile-picker": "../../components/tile-picker/index",
+    "draw-dialog": "../../components/draw-dialog/index",
+    "multi-win-config": "../../components/multi-win-config/index",
+    "meld-panel": "../../components/meld-panel/index",
+    "dora-counter": "../../components/dora-counter/index",
+    "game-over-dialog": "../../components/game-over-dialog/index"
+  }
+}

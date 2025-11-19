@@ -1,0 +1,25 @@
+<view class="tile-picker">
+  <view class="picker-header" bindtap="onToggleCollapse">
+    <text class="picker-title">麻将牌选择器</text>
+    <text class="picker-toggle">{{isCollapsed ? '展开 ▼' : '收起 ▲'}}</text>
+  </view>
+  
+  <view class="picker-content {{isCollapsed ? 'collapsed' : ''}}">
+    <block wx:for="{{sections}}" wx:key="type" wx:for-item="section">
+      <view class="section">
+        <text class="section-title">{{section.title}}</text>
+        <view class="tiles tiles-{{section.type}}" style="grid-template-columns: repeat({{section.columns}}, minmax(0, 1fr))">
+          <block wx:for="{{section.tiles}}" wx:key="*this" wx:for-item="tile">
+            <button
+              size="mini"
+              class="tile-btn tile-{{section.type}} {{tileUsage[tile] >= 4 ? 'tile-disabled' : ''}}"
+              data-tile="{{tile}}"
+              bindtap="onTileTap"
+              disabled="{{tileUsage[tile] >= 4}}"
+            >{{tile}}</button>
+          </block>
+        </view>
+      </view>
+    </block>
+  </view>
+</view>

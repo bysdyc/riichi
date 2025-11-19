@@ -1,0 +1,78 @@
+<view class="page">
+  <view class="card">
+    <view class="header-section">
+      <text class="title">导出对局记录</text>
+      <text class="subtitle">已根据当前对局生成完整记录，可复制发送或存档</text>
+    </view>
+
+    <view class="format-section">
+      <text class="section-label">导出格式</text>
+      <view class="format-options">
+        <button 
+          size="mini" 
+          class="format-btn {{exportFormat === 'text' ? 'active' : ''}}"
+          data-format="text"
+          bindtap="onFormatChange"
+        >纯文本</button>
+        <button 
+          size="mini" 
+          class="format-btn {{exportFormat === 'markdown' ? 'active' : ''}}"
+          data-format="markdown"
+          bindtap="onFormatChange"
+        >Markdown</button>
+        <button 
+          size="mini" 
+          class="format-btn {{exportFormat === 'json' ? 'active' : ''}}"
+          data-format="json"
+          bindtap="onFormatChange"
+        >JSON</button>
+      </view>
+    </view>
+
+    <view class="preview-section">
+      <view class="preview-header">
+        <text class="section-label">预览</text>
+        <text class="preview-info">共 {{textLength}} 字符</text>
+      </view>
+      <textarea 
+        class="export-text" 
+        value="{{exportText}}" 
+        disabled
+        auto-height
+        maxlength="-1"
+      ></textarea>
+    </view>
+
+    <view class="action-section">
+      <button class="action-copy" bindtap="onCopy">
+        <text class="action-icon">📋</text>
+        <text>复制到剪贴板</text>
+      </button>
+      <button class="action-share" bindtap="onShare">
+        <text class="action-icon">📤</text>
+        <text>分享</text>
+      </button>
+      <button class="action-save" bindtap="onSaveToFile">
+        <text class="action-icon">💾</text>
+        <text>保存为文件</text>
+      </button>
+    </view>
+
+    <view class="tips-section">
+      <text class="tips-title">💡 使用提示</text>
+      <text class="tips-item">• 纯文本格式适合微信、QQ等聊天工具</text>
+      <text class="tips-item">• Markdown格式适合文档编辑器和笔记软件</text>
+      <text class="tips-item">• JSON格式适合数据分析和备份</text>
+      <text class="tips-item">• 保存文件：支持文本文件、图片和发送到文件传输助手</text>
+      <text class="tips-item">• 生成图片后可保存到相册或直接分享</text>
+      <text class="tips-item">• 使用"文件传输助手"可将内容快速传到电脑</text>
+    </view>
+  </view>
+  
+  <!-- 隐藏的canvas用于生成图片 -->
+  <canvas 
+    type="2d" 
+    id="exportCanvas" 
+    style="position: fixed; left: -9999px; top: -9999px; width: 750px; height: 2000px;"
+  ></canvas>
+</view>

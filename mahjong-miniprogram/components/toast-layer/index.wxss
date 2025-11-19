@@ -1,0 +1,12 @@
+.toast {
+  position: fixed;
+  left: 50%;
+  top: 160rpx;
+  transform: translateX(-50%);
+  background-color: rgba(16, 185, 129, 0.95);
+  color: #ffffff;
+  padding: 20rpx 36rpx;
+  border-radius: 999rpx;
+  font-size: 26rpx;
+  z-index: 9999;
+}

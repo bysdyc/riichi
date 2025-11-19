@@ -1,0 +1,91 @@
+  <view wx:if="{{visible}}" class="overlay" bindtap="onBackground">
+  <view id="dialogContent" class="dialog-card" catchtap="noop">
+    <view class="dialog-header">
+      <text class="dialog-title">🎊 对局结束</text>
+    </view>
+
+    <scroll-view class="dialog-scroll" scroll-y="true">
+      <view class="final-scores">
+        <view class="section-title">最终排名</view>
+        <view class="ranking-list">
+          <block wx:for="{{rankedPlayers}}" wx:key="index">
+            <view class="ranking-item rank-{{index + 1}}">
+              <view class="rank-badge">
+                <text class="rank-number">{{index + 1}}</text>
+                <text class="rank-medal" wx:if="{{index === 0}}">🥇</text>
+                <text class="rank-medal" wx:elif="{{index === 1}}">🥈</text>
+                <text class="rank-medal" wx:elif="{{index === 2}}">🥉</text>
+              </view>
+              <view class="player-info">
+                <text class="player-name">{{item.name}}</text>
+              </view>
+              <view class="score-info">
+                <text class="final-score">{{item.score}}</text>
+                <text class="score-diff {{item.scoreDiff >= 0 ? 'positive' : 'negative'}}">
+                  {{item.scoreDiff >= 0 ? '+' : ''}}{{item.scoreDiff}}
+                </text>
+              </view>
+            </view>
+          </block>
+        </view>
+      </view>
+
+      <view class="game-stats">
+        <view class="section-title">对局统计</view>
+        <view class="stats-grid">
+          <view class="stat-item">
+            <text class="stat-label">对局类型</text>
+            <text class="stat-value">{{gameTypeLabel}}</text>
+          </view>
+          <view class="stat-item">
+            <text class="stat-label">总局数</text>
+            <text class="stat-value">{{roundHistory.length}} 局</text>
+          </view>
+          <view class="stat-item">
+            <text class="stat-label">最终场次</text>
+            <text class="stat-value">{{finalRoundDisplay}}</text>
+          </view>
+          <view class="stat-item">
+            <text class="stat-label">本场数</text>
+            <text class="stat-value">{{gameState.honba || 0}} 本场</text>
+          </view>
+        </view>
+      </view>
+
+      <view class="player-details">
+        <view class="section-title">详细数据</view>
+        <block wx:for="{{playerStats}}" wx:key="index">
+          <view class="player-detail-card">
+            <view class="player-detail-header">
+              <text class="player-detail-name">{{item.name}}</text>
+              <text class="player-detail-score">{{item.score}} 点</text>
+            </view>
+            <view class="detail-stats">
+              <view class="detail-stat">
+                <text class="detail-label">和牌次数</text>
+                <text class="detail-value">{{item.winCount}}</text>
+              </view>
+              <view class="detail-stat">
+                <text class="detail-label">放铳次数</text>
+                <text class="detail-value">{{item.loseCount}}</text>
+              </view>
+              <view class="detail-stat">
+                <text class="detail-label">立直次数</text>
+                <text class="detail-value">{{item.riichiCount}}</text>
+              </view>
+            </view>
+          </view>
+        </block>
+      </view>
+    </scroll-view>
+
+    <view class="dialog-actions">
+      <button class="action-btn secondary" bindtap="onViewHistory">查看历史</button>
+      <button class="action-btn secondary" bindtap="onSaveImage">保存图片</button>
+      <button class="action-btn primary" bindtap="onClose">关闭</button>
+    </view>
+  </view>
+  
+  <!-- 隐藏的画布用于生成图片 -->
+  <canvas type="2d" id="gameOverCanvas" style="position: fixed; left: -9999px; top: -9999px; width: 750px; height: 2000px;"></canvas>
+</view>

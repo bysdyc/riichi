@@ -1,0 +1,6 @@
+{
+  "navigationBarTitleText": "对局历史",
+  "usingComponents": {
+    "history-card": "/components/history-card/index"
+  }
+}
